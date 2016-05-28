@@ -22,11 +22,11 @@
 (def +version+ "0.1.0")
 
 (task-options!
-  pom {:project     'mvc-works/boot-workflow
+  pom {:project     'cumulo/server
        :version     +version+
        :description "Workflow"
-       :url         "https://github.com/mvc-works/boot-workflow"
-       :scm         {:url "https://github.com/mvc-works/boot-workflow"}
+       :url         "https://github.com/Cumulo/cumulo-server"
+       :scm         {:url "https://github.com/Cumulo/cumulo-server"}
        :license     {"MIT" "http://opensource.org/licenses/mit-license.php"}})
 
 (refer 'boot-figwheel :rename '{cljs-repl fw-cljs-repl}) ; avoid some symbols
@@ -114,4 +114,4 @@
   (comp
     (watch)
     (transform-cirru)
-    (test :namespaces '#{boot-workflow.test})))
+    (test :namespaces '#{cumulo-server-test})))

@@ -1,45 +1,38 @@
 
-Boot Workflow
+Cumulo Server
 ----
 
-Personal project template based on Respo, Boot, ClojureScript, Cirru Sepal...
+Use it togather with `cumulo/client`.
+
+### Usage
+
+[![Clojars Project](https://img.shields.io/clojars/v/cumulo/server.svg)](https://clojars.org/cumulo/server)
+
+```clojure
+[cumulo/server "0.1.0"]
+```
+
+```clojure
+(defn updater [db op op-data state-id op-id op-time] db)
+(defn render-scene [db] db)
+(defn render-view [state-id scene] {state-id {}})
+(def configs {:port 4010})
+
+(cumulo-server.core/setup-server! db-ref updater render-scene render-view configs)
+(cumulo-server.core/reload-renderer! db updater render-scene render-view)
+```
 
 ### Develop
 
-Genetate HTML(`target/index.html`), watch and build ClojureScript:
+Based on https://github.com/mvc-works/boot-workflow
 
 ```bash
 boot dev
-```
-
-Generate HTML, compile ClojureSript:
-
-```bash
-boot build-simple
-```
-
-Compile and optimize ClojureScript, generate HTML with revision:
-
-```bash
-boot build-advanced
-```
-
-Package jar file and install locally:
-
-```bash
-boot build
-```
-
-Package jar file and send to Clojars:
-
-```bash
-boot deploy
-```
-
-Get ClojureScript code:
-
-```bash
-boot compile-cirru
+# watching for the REPL
+(start-figwheel!)
+# new session
+cd target/
+node app.js
 ```
 
 ### License
