@@ -1,4 +1,8 @@
 
 (ns cumulo-server.schema)
 
-(def database {:states {}, :users {}})
+(def database {:states {}, :tasks {}, :users {}})
+
+(def state {:user-id nil, :id nil})
+
+(def task {:done? false, :id nil, :text ""})

@@ -11,9 +11,8 @@
                  [binaryage/devtools        "0.5.2"       :scope "test"]
                  [mrmcc3/boot-rev           "0.1.0"       :scope "test"]
                  [adzerk/boot-test          "1.1.1"       :scope "test"]
-                 [org.clojure/core.async    "0.2.374"     :scope "test"]
-                 [cumulo/shallow-diff       "0.1.1"]
-                 [mvc-works/hsl             "0.1.2"]])
+                 [mvc-works/hsl             "0.1.2"       :scope "test"]
+                 [cumulo/shallow-diff       "0.1.1"]])
 
 (require '[adzerk.boot-cljs   :refer [cljs]]
          '[cirru-sepal.core   :refer [transform-cirru cirru-sepal]]

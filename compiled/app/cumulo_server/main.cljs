@@ -11,8 +11,10 @@
 (defn -main []
   (nodejs/enable-util-print!)
   (setup-server! db-ref updater render-scene render-view {:port 4010})
+  (add-watch db-ref :log (fn [] (println @db-ref)))
   (println "server started"))
 
 (set! *main-cli-fn* -main)
 
-(defn on-jsload [] (reload-renderer! updater render-scene render-view))
+(defn on-jsload []
+  (reload-renderer! @db-ref updater render-scene render-view))
