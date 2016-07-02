@@ -17,4 +17,5 @@
 (set! *main-cli-fn* -main)
 
 (defn on-jsload []
+  (println "code updated")
   (reload-renderer! @db-ref updater render-scene render-view))
