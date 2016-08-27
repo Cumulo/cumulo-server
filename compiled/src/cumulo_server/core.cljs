@@ -2,30 +2,27 @@
 (ns cumulo-server.core
   (:require [cljs.nodejs :as nodejs]
             [cljs.reader :as reader]
-            [shallow-diff.diff :refer [diff]]))
+            [shallow-diff.diff :refer [diff]]
+            [cljs.core.async :refer [chan >!]])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(defonce shortid (js/require "shortid"))
+(defonce server-chan (chan))
 
-(defonce ws (js/require "ws"))
+(def shortid (js/require "shortid"))
 
-(defonce WebSocketServer (.-Server ws))
+(def ws (js/require "ws"))
+
+(def WebSocketServer (.-Server ws))
 
 (defonce socket-registry (atom {}))
 
 (defonce client-caches (atom {}))
 
-(defonce updater-ref
- (atom (fn [db op op-data state-id op-id op-time] db)))
-
-(defonce scene-ref (atom (fn [db] db)))
-
-(defonce view-ref (atom (fn [state-id scene] {state-id {}})))
-
-(defn rerender-view [db]
+(defn render-clients! [db render-scene render-view]
   (doseq [state-entry (:states db)]
     (let [state-id (first state-entry)
-          scene (@scene-ref db)
-          new-store (@view-ref state-id scene)
+          scene (render-scene db)
+          new-store (render-view state-id scene)
           old-store (or (get @client-caches state-id) {})
           changes (diff old-store new-store)
           socket (get @socket-registry state-id)]
@@ -34,36 +31,18 @@
           (.send socket (pr-str changes))
           (swap! client-caches assoc state-id new-store))))))
 
-(defn handle-message [db-ref op op-data state-id]
-  (let [op-id (.generate shortid)
-        op-time (.valueOf (js/Date.))
-        new-db (@updater-ref
-                 @db-ref
-                 op
-                 op-data
-                 state-id
-                 op-id
-                 op-time)]
-    (reset! db-ref new-db)
-    (rerender-view @db-ref)))
+(defn handle-message [op op-data state-id]
+  (let [op-id (.generate shortid) op-time (.valueOf (js/Date.))]
+    (go (>! server-chan [op op-data state-id op-id op-time]))))
 
-(defn reload-renderer! [db updater render-scene render-view]
-  (reset! updater-ref updater)
-  (reset! scene-ref render-scene)
-  (reset! view-ref render-view)
-  (rerender-view db))
-
-(defn setup-server! [db-ref updater render-scene render-view configs]
+(defn run-server! [configs]
   (let [wss (new WebSocketServer (js-obj "port" (:port configs)))]
-    (reset! updater-ref updater)
-    (reset! scene-ref render-scene)
-    (reset! view-ref render-view)
     (.on
       wss
       "connection"
       (fn [socket]
         (let [state-id (.generate shortid)]
-          (handle-message db-ref :state/connect nil state-id)
+          (handle-message :state/connect nil state-id)
           (swap! socket-registry assoc state-id socket)
           (.on
             socket
@@ -71,11 +50,11 @@
             (fn [rawData]
               (let [action (reader/read-string rawData)
                     [op op-data] action]
-                (handle-message db-ref op op-data state-id))))
+                (handle-message op op-data state-id))))
           (.on
             socket
             "close"
             (fn []
               (swap! socket-registry dissoc state-id)
-              (handle-message db-ref :state/disconnect nil state-id)))
-          (rerender-view @db-ref))))))
+              (handle-message :state/disconnect nil state-id)))))))
+  server-chan)
