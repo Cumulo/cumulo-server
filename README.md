@@ -9,7 +9,7 @@ Use it togather with `cumulo/client`.
 [![Clojars Project](https://img.shields.io/clojars/v/cumulo/server.svg)](https://clojars.org/cumulo/server)
 
 ```clojure
-[cumulo/server "0.1.0"]
+[cumulo/server "0.1.1"]
 ```
 
 ```clojure

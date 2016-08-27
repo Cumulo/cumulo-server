@@ -17,7 +17,7 @@
          '[adzerk.boot-test   :refer :all]
          '[boot-figwheel])
 
-(def +version+ "0.1.0")
+(def +version+ "0.1.1")
 
 (task-options!
   pom {:project     'cumulo/server
