@@ -1,19 +1,20 @@
 
 (set-env!
- :dependencies '[[org.clojure/clojurescript "1.9.36"      :scope "test"]
-                 [org.clojure/clojure       "1.8.0"       :scope "test"]
+ :dependencies '[[org.clojure/clojure       "1.8.0"       :scope "test"]
+                 [org.clojure/clojurescript "1.9.293"     :scope "test"]
                  [org.clojure/core.async    "0.2.385"     :scope "test"]
                  [adzerk/boot-cljs          "1.7.228-1"   :scope "test"]
                  [figwheel-sidecar          "0.5.4-5"     :scope "test"]
                  [com.cemerick/piggieback   "0.2.1"       :scope "test"]
                  [org.clojure/tools.nrepl   "0.2.12"      :scope "test"]
                  [ajchemist/boot-figwheel   "0.5.4-5"     :scope "test"]
-                 [cirru/boot-cirru-sepal    "0.1.8"       :scope "test"]
-                 [adzerk/boot-test          "1.1.1"       :scope "test"]
+                 [cirru/boot-stack-server   "0.1.23"      :scope "test"]
+                 [adzerk/boot-test          "1.1.2"       :scope "test"]
+                 [cumulo/recollect          "0.1.0"]
                  [cumulo/shallow-diff       "0.1.1"]])
 
 (require '[adzerk.boot-cljs   :refer [cljs]]
-         '[cirru-sepal.core   :refer [transform-cirru]]
+         '[stack-server.core  :refer [start-stack-editor! transform-stack]]
          '[adzerk.boot-test   :refer :all]
          '[boot-figwheel])
 
@@ -31,7 +32,7 @@
 
 (def all-builds
   [{:id "dev"
-    :source-paths ["compiled/src" "compiled/app"]
+    :source-paths ["src"]
     :compiler {:output-to "app.js"
                :output-dir "server_out/"
                :main 'cumulo-server.main
@@ -48,24 +49,20 @@
    :http-server-root "target"
    :reload-clj-files false})
 
-(deftask compile-cirru []
-  (set-env!
-    :source-paths #{"cirru/"})
+(deftask editor! []
   (comp
-    (transform-cirru)
-    (target :dir #{"compiled/"})))
+    (repl)
+    (start-stack-editor! :port 7011)
+    (target :dir #{"src/"})))
 
-(deftask watch-compile []
-  (set-env!
-    :source-paths #{"cirru/"})
+(deftask generate-code []
   (comp
-    (watch)
-    (transform-cirru)
-    (target :dir #{"compiled/"})))
+    (transform-stack :filename "stack-sepal.ir")
+    (target :dir #{"src/"})))
 
 (deftask dev []
   (set-env!
-    :source-paths #{"compiled/src" "compiled/app"})
+    :source-paths #{"src"})
   (comp
     (repl)
     (figwheel
@@ -75,27 +72,24 @@
       :target-path "target")
     (target)))
 
-(deftask build-simple []
-  (set-env!
-    :source-paths #{"cirru/src" "cirru/app"})
-  (comp
-    (transform-cirru)
-    (cljs :compiler-options {:target :nodejs})
-    (target)))
-
 (deftask build-advanced []
   (set-env!
-    :source-paths #{"cirru/src" "cirru/app"})
+    :asset-paths #{"assets/"})
   (comp
-    (transform-cirru)
-    (cljs :optimizations :advanced :compiler-options {:target :nodejs})
+    (transform-stack :filename "stack-sepal.ir")
+    (cljs :optimizations :advanced
+          :compiler-options {:language-in :ecmascript5
+                             :target :nodejs
+                             :pseudo-names true
+                             :static-fns true
+                             :parallel-build true
+                             :optimize-constants true
+                             :source-map true})
     (target)))
 
 (deftask build []
-  (set-env!
-    :source-paths #{"cirru/src"})
   (comp
-    (transform-cirru)
+    (transform-stack :filename "stack-sepal.ir")
     (pom)
     (jar)
     (install)
@@ -110,8 +104,7 @@
 
 (deftask watch-test []
   (set-env!
-    :source-paths #{"cirru/src" "cirru/test"})
+    :source-paths #{"src" "test"})
   (comp
     (watch)
-    (transform-cirru)
-    (test :namespaces '#{cumulo-server-test})))
+    (test :namespaces '#{cumulo-server.test})))

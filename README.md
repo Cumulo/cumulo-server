@@ -70,9 +70,10 @@ Demo in this project:
 
 ### Develop
 
-Based on https://github.com/mvc-works/boot-workflow
+Based on https://github.com/mvc-works/stack-workflow
 
 ```bash
+boot editor!
 boot dev
 # watching for the REPL
 (start-figwheel!)

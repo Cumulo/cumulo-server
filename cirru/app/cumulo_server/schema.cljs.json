@@ -1,1 +1,0 @@
-[["ns","cumulo-server.schema"],["def","database",["{}",[":states",["{}"]],[":users",["{}"]],[":tasks",["{}"]]]],["def","state",["{}",[":user-id","nil"],[":id","nil"]]],["def","task",["{}",[":id","nil"],[":text","|"],[":done?","false"]]]]
